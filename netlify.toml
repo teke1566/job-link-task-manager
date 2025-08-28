@@ -3,9 +3,8 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "20.19.0"   # Vite requires Node 20.19+ or 22.12+
+  NODE_VERSION = "20.19.4"
 
-# If you didn't add public/_redirects, add this block:
 [[redirects]]
   from = "/*"
   to = "/index.html"
