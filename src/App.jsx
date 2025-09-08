@@ -72,6 +72,30 @@ const getWeek = (date) => {
 const COLORS = ["#4ade80", "#3b82f6", "#facc15"];
 const avatarUrl = (email) => `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(email || "unknown")}&scale=90`;
 const favicon = (url) => { try { const u = new URL(url); return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`; } catch { return null; } };
+// Mask emails like "a******z@g****e.com"
+function maskEmail(email) {
+  if (!email) return "unknown";
+  const s = String(email);
+  const [user = "", domain = ""] = s.split("@");
+
+  // mask local part
+  let maskedUser;
+  if (user.length <= 2) {
+    maskedUser = user[0] ? user[0] + "*" : "*";
+  } else {
+    maskedUser = user[0] + "*".repeat(Math.max(1, user.length - 2)) + user.slice(-1);
+  }
+
+  // mask domain (keep TLD readable)
+  const domainParts = domain.split(".");
+  const dom = domainParts.shift() || "";
+  const tld = domainParts.join(".");
+  const maskedDom = dom
+    ? dom[0] + "*".repeat(Math.max(1, dom.length - 1))
+    : "*";
+
+  return tld ? `${maskedUser}@${maskedDom}.${tld}` : `${maskedUser}@${maskedDom}`;
+}
 
 /* ---------- Mobile sheet (drawer-like) ---------- */
 function useBodyScrollLock(open) {
@@ -1615,7 +1639,7 @@ const upsertGlobalNote = async (text) => {
                       <Text size="sm">
                         [{format(new Date(l.created_at), "PPpp")}]{" "}
                         <img src={avatarUrl(l.user?.email)} alt="" style={{ width:18, height:18, borderRadius:"50%", verticalAlign:"text-bottom", marginRight:6 }} />
-                        <b>{l.user?.email || "Unknown user"}</b>{" "}
+                        <b>{maskEmail(l.user?.email) || "Unknown user"}</b>{" "}
                         <Badge color={badgeColor} variant="light">{label}</Badge>{" "}
                         on <b>{l.task?.title || "Untitled Task"}</b>
                       </Text>
